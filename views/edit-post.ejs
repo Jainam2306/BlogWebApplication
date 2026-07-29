@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Post &middot; ThoughtSpace</title>
+    <%# Root-relative path is required here (not "styles.css") because this page is
+        served from the nested /posts/:id/edit route, unlike the site's other pages. %>
+    <link rel="stylesheet" href="/styles.css">
+</head>
+
+<body>
+    <%- include('partials/header.ejs') %>
+
+    <div class="workspace-hero">
+        <h1 class="workspace-greeting">Edit your post <span>&#9999;&#65039;</span></h1>
+        <p class="workspace-subtitle">Make your changes and save to update it in your feed.</p>
+    </div>
+
+    <section class="composer">
+        <h2 class="composer-title">Edit post</h2>
+        <form class="composer-form" method="POST" action="/posts/<%= post.id %>/edit">
+            <%# Carried forward so POST /posts/:id/edit can redirect back to a populated
+                /workspace afterward — there's no session to store this in instead. %>
+            <input type="hidden" name="fName" value="<%= fName || '' %>">
+            <input type="hidden" name="lastName" value="<%= lastName || '' %>">
+            <input type="hidden" name="email" value="<%= email || '' %>">
+
+            <div class="form-group">
+                <label for="title">Title</label>
+                <input type="text" id="title" name="title" value="<%= post.title %>" required>
+            </div>
+            <div class="form-group">
+                <label for="excerpt">What's on your mind?</label>
+                <textarea id="excerpt" name="excerpt" class="composer-textarea" required><%= post.excerpt %></textarea>
+            </div>
+            <div class="composer-actions">
+                <a href="/workspace?fName=<%= encodeURIComponent(fName || '') %>&lastName=<%= encodeURIComponent(lastName || '') %>&email=<%= encodeURIComponent(email || '') %>" class="composer-draft-btn">Cancel</a>
+                <button type="submit" class="cta-button composer-publish-btn">Save changes →</button>
+            </div>
+        </form>
+    </section>
+
+    <%- include('partials/footer.ejs') %>
+</body>
+
+</html>

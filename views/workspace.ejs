@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workspace &middot; ThoughtSpace</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <%- include('partials/header.ejs') %>
+
+    <div class="workspace-hero">
+        <h1 class="workspace-greeting">Welcome back, <%= fName %> <span>&#9997;&#65039;</span></h1>
+        <p class="workspace-subtitle">Your creative corner — view your stories, share new ideas, and edit what you've written.</p>
+    </div>
+
+    <section class="composer">
+        <h2 class="composer-title">Share your thoughts</h2>
+        <form class="composer-form" method="POST" action="/posts">
+            <input type="hidden" name="fName" value="<%= fName || '' %>">
+            <input type="hidden" name="lastName" value="<%= lastName || '' %>">
+            <input type="hidden" name="email" value="<%= email || '' %>">
+            <div class="form-group">
+                <label for="postTitle">Title</label>
+                <input type="text" id="postTitle" name="postTitle" placeholder="Give your story a title" required>
+            </div>
+            <div class="form-group">
+                <label for="postBody">What's on your mind?</label>
+                <textarea id="postBody" name="postBody" class="composer-textarea" placeholder="Start writing... share a story, an opinion, or an idea." required></textarea>
+            </div>
+            <div class="composer-actions">
+                <button type="button" class="composer-draft-btn">Save Draft</button>
+                <button type="submit" class="cta-button composer-publish-btn">Publish Post →</button>
+            </div>
+        </form>
+    </section>
+
+    <%# The featured post lives in the same posts array (id 0, featured: true) so its
+        edit link can reuse the same /posts/:id/edit route as every other card. %>
+    <% const featuredPost = posts.find(post => post.featured); %>
+    <% if (featuredPost) { %>
+        <section class="featured-post">
+            <span class="section-label">Featured Story</span>
+            <div class="featured-post-card">
+                <div class="featured-post-media">&#128220;</div>
+                <div class="featured-post-content">
+                    <span class="post-tag"><%= featuredPost.tag %></span>
+                    <h2 class="featured-post-title"><%= featuredPost.title %></h2>
+                    <p class="featured-post-excerpt"><%= featuredPost.excerpt %></p>
+                    <div class="post-meta">
+                        <span class="post-meta-author">
+                            <span class="avatar"><%= featuredPost.author.charAt(0) %></span>
+                            <%= featuredPost.author %>
+                        </span>
+                        <span class="post-meta-dot">&middot;</span>
+                        <span><%= featuredPost.date %></span>
+                    </div>
+                    <div class="post-card-actions">
+                        <a href="#" class="post-link">Read more →</a>
+                        <%# fName/lastName/email are re-attached as query params so GET /posts/:id/edit
+                            can pass them along and eventually redirect back to a populated /workspace. %>
+                        <a href="/posts/<%= featuredPost.id %>/edit?fName=<%= encodeURIComponent(fName || '') %>&lastName=<%= encodeURIComponent(lastName || '') %>&email=<%= encodeURIComponent(email || '') %>" class="post-icon-btn" aria-label="Edit post">&#9998;</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    <% } %>
+
+    <section class="feed">
+        <div class="feed-header">
+            <span class="section-label">Your Feed</span>
+            <div class="feed-tabs">
+                <button type="button" class="feed-tab feed-tab-active">All</button>
+                <button type="button" class="feed-tab">Published</button>
+                <button type="button" class="feed-tab">Drafts</button>
+            </div>
+        </div>
+
+        <div class="feed-grid">
+            <%# Exclude the featured post here since it already has its own section above. %>
+            <% posts.filter(post => !post.featured).forEach(post => { %>
+                <article class="post-card <%= post.draft ? 'post-card-draft' : '' %>" data-post-id="<%= post.id %>">
+                    <div class="post-card-media">&#128220;</div>
+                    <div class="post-card-body">
+                        <span class="post-tag <%= post.draft ? 'post-tag-draft' : '' %>"><%= post.tag %></span>
+                        <h3 class="post-card-title"><%= post.title %></h3>
+                        <p class="post-card-excerpt"><%= post.excerpt %></p>
+                        <div class="post-meta">
+                            <span class="post-meta-author">
+                                <span class="avatar"><%= post.author.charAt(0) %></span>
+                                <%= post.author %>
+                            </span>
+                            <span class="post-meta-dot">&middot;</span>
+                            <span><%= post.date %></span>
+                        </div>
+                        <div class="post-card-actions">
+                            <a href="#" class="post-link"><%= post.draft ? "Continue writing →" : "Read more →" %></a>
+                            <div class="post-icon-group">
+                                <a href="/posts/<%= post.id %>/edit?fName=<%= encodeURIComponent(fName || '') %>&lastName=<%= encodeURIComponent(lastName || '') %>&email=<%= encodeURIComponent(email || '') %>" class="post-icon-btn" aria-label="Edit post">&#9998;</a>
+                                <%# Delete has no page to redirect to, so it's wired up client-side in script.js via fetch(). %>
+                                <button type="button" class="post-icon-btn post-icon-btn-danger post-delete-btn" data-post-id="<%= post.id %>" aria-label="Delete post">&#128465;</button>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            <% }) %>
+        </div>
+    </section>
+
+    <%- include('partials/footer.ejs') %>
+    <script src="/script.js" defer></script>
+</body>
+
+</html>
